@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.edusys.mapper.GradeMapper">
+    <!-- 根据学生ID查询学生成绩详情 -->
+    <select id="getNowGrade" parameterType="int" resultType="org.example.edusys.pojo.NowGrade">
+        SELECT
+            s.student_name as name,
+            ats.total_score as totalScore,
+            ats.TOTAL_RANK as rank,
+            ats.TOTAL_RANK as provinceRank
+        FROM AboutStudents s
+        LEFT JOIN aboutedu_total_score ats ON s.student_id = ats.student_id
+        WHERE s.student_id = #{id}
+    </select>
+
+    <!-- 根据学生ID查询各科成绩 -->
+    <select id="getSubjectScores" parameterType="int" resultType="org.example.edusys.pojo.subjectScore">
+        SELECT '语文' as subject, score, full_score as fullScore, rank
+        FROM aboutedu_chinese_score WHERE student_id = #{id}
+        UNION ALL
+        SELECT '数学' as subject, score, full_score as fullScore, rank
+        FROM aboutedu_math_score WHERE student_id = #{id}
+        UNION ALL
+        SELECT '英语' as subject, score, full_score as fullScore, rank
+        FROM aboutedu_english_score WHERE student_id = #{id}
+        UNION ALL
+        SELECT '物理' as subject, score, full_score as fullScore, rank
+        FROM aboutedu_physics_score WHERE student_id = #{id}
+        UNION ALL
+        SELECT '化学' as subject, score, full_score as fullScore, rank
+        FROM aboutedu_chemistry_score WHERE student_id = #{id}
+        UNION ALL
+        SELECT '生物' as subject, score, full_score as fullScore, rank
+        FROM aboutedu_biology_score WHERE student_id = #{id}
+        ORDER BY subject
+    </select>
+</mapper>

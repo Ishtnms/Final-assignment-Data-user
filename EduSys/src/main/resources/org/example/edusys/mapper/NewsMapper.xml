@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.edusys.mapper.NewsMapper">
+    <!-- 查询所有最新新闻 -->
+    <select id="getNewsListofLast" resultType="org.example.edusys.pojo.News">
+        SELECT * FROM (
+            SELECT
+                news_id as newsId,
+                title,
+                description,
+                image_url as imageUrl,
+                news_url as newsUrl,
+                source,
+                publish_date as publishDate,
+                ROW_NUMBER() OVER (ORDER BY publish_date DESC, news_id DESC) as rn
+            FROM AboutNews
+        ) WHERE rn BETWEEN #{pageStart} AND #{pageEnd}
+        ORDER BY rn
+    </select>
+
+    <!-- 查询政策类新闻 -->
+    <select id="getNewsListofPolicy" resultType="org.example.edusys.pojo.News">
+        SELECT * FROM (
+            SELECT
+                news_id as newsId,
+                title,
+                description,
+                image_url as imageUrl,
+                news_url as newsUrl,
+                source,
+                publish_date as publishDate,
+                ROW_NUMBER() OVER (ORDER BY publish_date DESC, news_id DESC) as rn
+            FROM AboutNews
+            WHERE source = 1
+        ) WHERE rn BETWEEN #{pageStart} AND #{pageEnd}
+        ORDER BY rn
+    </select>
+
+    <!-- 查询校园类新闻 -->
+    <select id="getNewsListofcampus" resultType="org.example.edusys.pojo.News">
+        SELECT * FROM (
+            SELECT
+                news_id as newsId,
+                title,
+                description,
+                image_url as imageUrl,
+                news_url as newsUrl,
+                source,
+                publish_date as publishDate,
+                ROW_NUMBER() OVER (ORDER BY publish_date DESC, news_id DESC) as rn
+            FROM AboutNews
+            WHERE source = 2
+        ) WHERE rn BETWEEN #{pageStart} AND #{pageEnd}
+        ORDER BY rn
+    </select>
+
+    <!-- 查询技术类新闻 -->
+    <select id="getNewsListoftechnology" resultType="org.example.edusys.pojo.News">
+        SELECT * FROM (
+            SELECT
+                news_id as newsId,
+                title,
+                description,
+                image_url as imageUrl,
+                news_url as newsUrl,
+                source,
+                publish_date as publishDate,
+                ROW_NUMBER() OVER (ORDER BY publish_date DESC, news_id DESC) as rn
+            FROM AboutNews
+            WHERE source = 3
+        ) WHERE rn BETWEEN #{pageStart} AND #{pageEnd}
+        ORDER BY rn
+    </select>
+</mapper>

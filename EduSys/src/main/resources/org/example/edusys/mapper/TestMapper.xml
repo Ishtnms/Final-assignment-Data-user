@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.edusys.mapper.TestMapper">
+    <!-- 查询所有竞赛信息 -->
+    <select id="getCompetitions" resultType="org.example.edusys.pojo.CompetitionInfo">
+        SELECT
+            ID ,
+            NAME,
+            SUBJECT,
+            TESTLEVEL as "level",
+            TO_CHAR(REGISTRATION_DEADLINE, 'YYYY-MM-DD') AS REGISTRATIONDEADLINE,
+            TO_CHAR(COMPETITION_DATE, 'YYYY-MM-DD') AS COMPETITIONDATE,
+            TARGET,
+            FEE,
+            DESCRIPTION
+        FROM ABOUTEDU_COMPETITIONS
+        order by ID
+    </select>
+
+    <insert id="postCompetition">
+        INSERT INTO ABOUTEDU_COMPETITION_REG (
+            ID,
+            ACTIVITY_ID,
+            STUDENT_NAME,
+            STUDENT_CLASS,
+            GRADE,
+            ID_CARD,
+            PHONE,
+            REMARKS,
+            SCHOOL,
+            TEACHER,
+            USER_ID,
+            REGISTRATION_DATE
+        ) VALUES (
+                     seq_competition_reg_id.NEXTVAL,
+                     #{activityId},
+                     #{name},
+                     #{clazz},
+                     #{grade},
+                     #{idCard},
+                     #{phone},
+                     #{remarks},
+                     #{school},
+                     #{teacher},
+                     #{userId},
+                     SYSDATE
+                 )
+    </insert>
+
+</mapper>

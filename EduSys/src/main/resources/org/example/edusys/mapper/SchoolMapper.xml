@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.edusys.mapper.SchoolMapper">
+    <!-- 根据可选条件查询优秀教师列表 -->
+    <select id="getExcellentTeachers" resultType="org.example.edusys.pojo.Teacher">
+        SELECT * FROM (
+        SELECT
+        teacher_id as teacherId,
+        name,
+        subject,
+        img,
+        school_id as schoolId,
+        edu,
+        age,
+        gender,
+        zhicheng,
+        work_exp as workExp,
+        prize,
+        ROW_NUMBER() OVER (ORDER BY teacher_id) as rn
+        FROM AboutTeachers
+        <where>
+            <if test="gender != null">
+                AND gender = #{gender}
+            </if>
+            <if test="region != null">
+                AND school_id = #{region}
+            </if>
+            <if test="name != null and name != ''">
+                AND UPPER(name) LIKE UPPER('%' || #{name} || '%')
+            </if>
+        </where>
+        ) WHERE rn BETWEEN #{pageStart} AND #{pageEnd}
+        ORDER BY rn
+    </select>
+
+    <!-- 根据可选条件查询优秀教师总数 -->
+    <select id="getExcellentTeachersTotal" resultType="int">
+        SELECT COUNT(*)
+        FROM AboutTeachers
+        <where>
+            <if test="gender != null">
+                AND gender = #{gender}
+            </if>
+            <if test="region != null">
+                AND school_id = #{region}
+            </if>
+            <if test="name != null and name != ''">
+                AND UPPER(name) LIKE UPPER('%' || #{name} || '%')
+            </if>
+        </where>
+    </select>
+    <!-- 根据ID查询教师详细信息 -->
+    <select id="getReports" parameterType="int" resultType="org.example.edusys.pojo.Teacher">
+        SELECT
+            teacher_id as teacherId,
+            name,
+            subject,
+            img,
+            school_id as schoolId,
+            edu,
+            age,
+            gender,
+            zhicheng,
+            work_exp as workExp,
+            prize
+        FROM AboutTeachers
+        WHERE teacher_id = #{id}
+    </select>
+    <!-- 获取各学校教师学历分布 -->
+    <select id="getEduDistribution" resultType="org.example.edusys.pojo.EduDistribution">
+        SELECT
+            school_id as schoolId,
+            COUNT(*) as value,
+            CASE edu
+                WHEN 1 THEN '初中'
+                WHEN 2 THEN '高中'
+                WHEN 3 THEN '本科'
+                WHEN 4 THEN '硕士'
+                WHEN 5 THEN '博士'
+                ELSE '其他'
+        END as name
+        FROM AboutTeachers
+        WHERE school_id = #{schoolId}
+        GROUP BY school_id, edu
+        ORDER BY edu
+    </select>
+    <select id="getTitleDistribution" resultType="org.example.edusys.pojo.TitleDistribution">
+        SELECT
+            school_id as schoolId,
+            COUNT(*) as value,
+            CASE zhicheng
+                WHEN 1 THEN '三级教师'
+                WHEN 2 THEN '二级教师'
+                WHEN 3 THEN '一级教师'
+                WHEN 4 THEN '高级教师'
+                WHEN 5 THEN '正高级教师'
+                ELSE '其他'
+        END as name
+        FROM AboutTeachers
+        WHERE school_id = #{schoolId}
+        GROUP BY school_id, zhicheng
+        ORDER BY zhicheng
+    </select>
+
+    <!-- 统计总奖项数和各级别奖项数 -->
+    <select id="getCompetitionsTotal" resultType="org.example.edusys.pojo.AwardTotal">
+        SELECT
+            SUM(national_awards + provincial_awards + municipal_awards) as totalAwards,
+            SUM(national_awards) as nationalAwards,
+            SUM(provincial_awards) as provincialAwards,
+            SUM(municipal_awards) as municipalAwards
+        FROM AboutTeacherAwards
+    </select>
+        <!-- 按学校分组统计各学校教师获奖情况 -->
+    <select id="getCompetitionsSchool" resultType="org.example.edusys.pojo.SchoolAwardDetail">
+        SELECT
+            s.school_id as id,
+            '第' || s.school_id || '中学' as name,
+            '/images/logo.svg' as logo,
+            COALESCE(award_counts.award_count, 0) as awardCount,
+            COALESCE(teacher_counts.teacher_count, 0) as teachers,
+            COALESCE(national_counts.national_count, 0) as national,
+            COALESCE(provincial_counts.provincial_count, 0) as provincial,
+            COALESCE(municipal_counts.municipal_count, 0) as municipal
+        FROM (
+            SELECT DISTINCT school_id FROM AboutTeachers
+        ) s
+        LEFT JOIN (
+            SELECT
+                t.school_id,
+                SUM(ta.national_awards + ta.provincial_awards + ta.municipal_awards) as award_count
+            FROM AboutTeachers t
+            LEFT JOIN AboutTeacherAwards ta ON t.teacher_id = ta.teacher_id
+            GROUP BY t.school_id
+        ) award_counts ON s.school_id = award_counts.school_id
+        LEFT JOIN (
+            SELECT
+                school_id,
+                COUNT(*) as teacher_count
+            FROM AboutTeachers
+            GROUP BY school_id
+        ) teacher_counts ON s.school_id = teacher_counts.school_id
+        LEFT JOIN (
+            SELECT
+                t.school_id,
+                SUM(ta.national_awards) as national_count
+            FROM AboutTeachers t
+            LEFT JOIN AboutTeacherAwards ta ON t.teacher_id = ta.teacher_id
+            GROUP BY t.school_id
+        ) national_counts ON s.school_id = national_counts.school_id
+        LEFT JOIN (
+            SELECT
+                t.school_id,
+                SUM(ta.provincial_awards) as provincial_count
+            FROM AboutTeachers t
+            LEFT JOIN AboutTeacherAwards ta ON t.teacher_id = ta.teacher_id
+            GROUP BY t.school_id
+        ) provincial_counts ON s.school_id = provincial_counts.school_id
+        LEFT JOIN (
+            SELECT
+                t.school_id,
+                SUM(ta.municipal_awards) as municipal_count
+            FROM AboutTeachers t
+            LEFT JOIN AboutTeacherAwards ta ON t.teacher_id = ta.teacher_id
+            GROUP BY t.school_id
+        ) municipal_counts ON s.school_id = municipal_counts.school_id
+        ORDER BY s.school_id
+    </select>
+
+
+</mapper>

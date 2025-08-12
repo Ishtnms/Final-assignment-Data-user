@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: EduSys
+
+#???
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:oracle:thin:@//192.168.86.128:1521/helowin
+    driver-class-name: oracle.jdbc.OracleDriver
+    username: system
+    password: 123456
+
+#Mybaits
+  mybaits:
+    configuration:
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    mapper-locations: classpath:mapper/*.xml
+
